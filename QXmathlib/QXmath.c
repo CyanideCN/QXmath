@@ -8,7 +8,7 @@ const double Rd = 6.85578 * 0.01;
 const double Rw = 11.017874 * 0.01;
 const double E0 = 6.1078;
 const double T0 = 273.16;
-const double Cl = 0.57;
+const double C1 = 0.57;
 const double L0 = 597.4;
 const double Cf = 0.06;
 const double Lf = 79.72;
@@ -20,13 +20,12 @@ const double R = 6.371229 * 1e3;
 const double C = 1.002;
 
 double Tc(double p, double t, double td){
-    /*根据温度和露点计算凝结高度上的温度*/
     double Etd, Z, Z0, step = 10.0, w, m1;
     double out, T, Td;
     T = T0 + t;
     Td = T0 + td;
     Etd = E_WATER(td);
-    w = (Rd / Rw) * Etd / (-1 * Etd);
+    w = (Rd / Rw) * Etd / (p - Etd);
     m1 = (Cpd * (1 + Cpv * w / Cpd)) / (Rd * (1 + w / (Rd / Rw)));
     Z0 = pow(T, m1) / Etd;
     out = Td;
@@ -47,17 +46,15 @@ double Tc(double p, double t, double td){
 }
 
 double E_WATER(double td){
-    /*计算水面饱和水汽压*/
     double T, E;
     T = T0 + td;
-    E = ((L0 + Cl * T0) * (T - T0)) / (Rw * T0 * T);
+    E = ((L0 + C1 * T0) * (T - T0)) / (Rw * T0 * T);
     E = exp(E);
-    E = E * E0 * pow(T0 / T, Cl / Rw);
+    E = E * E0 * pow(T0 / T, C1 / Rw);
     return E;
 }
 
 double E_ICE(double td){
-    /*计算冰面饱和水气压*/
     double Ls, T, E;
     if(td > 0.0){
         printf("td>0, can not calculate E on ice\n");
@@ -76,7 +73,7 @@ double Qse(double P, double t, double td){
     Kd = Rd / Cpd;
     T = t + T0;
     tc = Tc(P, t, td) + T0;
-    Lc = L0 - Cl * (tc - T0);
+    Lc = L0 - C1 * (tc - T0);
     E = E_WATER(td);
     w = 0.622 * E / (P - E);
     qse = T * pow((1000 / (P - E)), Kd) * exp((Lc * w) / (Cpd * tc));
@@ -96,7 +93,7 @@ double Ttdm(double p, double t, double td, double z){
     double E, Tz, Tl, Tt, q, L;
     E = E_WATER(td);
     Tz = 100 * A * g * z / Cpd;
-    L = L0 - Cl * td;
+    L = L0 - C1 * td;
     q = 0.622 * E / (p - 0.378 * E);
     Tl = L * q / Cpd;
     Tt = t + Tz + Tl;
@@ -105,7 +102,7 @@ double Ttdm(double p, double t, double td, double z){
 
 double Ttgk(double p, double t, double td, double z, double v){
     double L, q, out;
-    L = L0 - Cl * td;
+    L = L0 - C1 * td;
     q = qgk(p, td) / 1000;
     out = t + 1000 * A * g * z / Cpd + L * q / Cpd + A * v * v / (2 * Cpd);
     return out;
@@ -150,7 +147,7 @@ double Fc(double p, double td){
     Td = T0 + Td;
     Etd = E_WATER(td);
     qs = 1000 * Rd * Etd / (p - 0.378 * Etd) / Rw;
-    L = L0 - Cl * (Td - T0);
+    L = L0 - C1 * (Td - T0);
     Fcd = (qs / (p - 0.378 * Etd)) * (Rd * L/ (Cpd * Rw * Td) - 1);
     out = 100 * Fcd;
     out = out / (1 + (L * L * qs * 0.001 / (Cpd * Rw * Td * Td)) * (p / (p - 0.378 * Etd)));
@@ -167,7 +164,7 @@ double sqtl(double p, double td, double v){
 double Rm(double P, double t){
     double L, T, E, R, w, q, out;
     T = t + T0;
-    L = L0 - Cl * t;
+    L = L0 - C1 * t;
     E = E_WATER(t);
     w = 0.622 * E / (P - E);
     q = 0.622 * E / (P - 0.378 * E);
@@ -246,15 +243,15 @@ double showalter(double t8, double td8, double t5){
     T8 = T0 + t8;
     Etd8 = E_WATER(t8);
     w = (Rd / Rw) * Etd8 / (P8 - Etd8);
-    m1 = (Cpd * (1 + Cpv * w / Cpd)) / (Rd * (1 + w / R * (Rd / Rw)));
+    m1 = (Cpd * (1 + Cpv * w / Cpd)) / (Rd * (1 + w / (Rd / Rw)));
     Ta = Tc(P8, t8, td8) + T0;
     Pa = P8 * (pow(Ta / T8, m1));
     m2 = (Cpd / Rd) * (1 + C * w / Cpd);
     ETa = E_WATER(Ta - T0);
-    Qc = log((Pa - ETa) / pow(Ta, m2)) - (0.622 / Rd) * (((L0 + Cl * (T0 - Ta)) / Ta) * (ETa / (Pa - ETa)));
+    Qc = log((Pa - ETa) / pow(Ta, m2)) - (0.622 / Rd) * (((L0 + C1 * (T0 - Ta)) / Ta) * (ETa / (Pa - ETa)));
     out = T8;
     Eout = E_WATER(out - T0);
-    Q5 = log((P5 - Eout) / pow(out, m2)) - (0.622 / Rd) * (((L0 + Cl * (T0 - out)) / out) * (Eout / (P5 - Eout)));
+    Q5 = log((P5 - Eout) / pow(out, m2)) - (0.622 / Rd) * (((L0 + C1 * (T0 - out)) / out) * (Eout / (P5 - Eout)));
     while(fabs(Qc - Q5) > 0.0001){
         if(Qc > Q5){
             out = out - step;
@@ -265,7 +262,7 @@ double showalter(double t8, double td8, double t5){
             out = out - step;
         }
         Eout = E_WATER(out - T0);
-        Q5 = log((P5 - Eout) / pow(out, m2)) - (0.622 / Rd) * (((L0 + Cl * (T0 - out)) / out) * (Eout / (P5 - Eout)));
+        Q5 = log((P5 - Eout) / pow(out, m2)) - (0.622 / Rd) * (((L0 + C1 * (T0 - out)) / out) * (Eout / (P5 - Eout)));
     }
     return t5 - (out - T0);
 }
