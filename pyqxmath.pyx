@@ -2,6 +2,8 @@
 # distutils: sources = QXmathlib/QXmath.c
 # distutils: include_dirs = QXmathlib/
 
+import numpy as np
+
 from _qxmath cimport *
 
 # Start of function exposed to Python
@@ -59,3 +61,17 @@ def showalter_index(double t850, double td850, double t500):
 
 def richardson_number(double pdn, double tdn, double fddn, double ffdn, double pup, double tup, double fdup, double ffup):
     return richardson(pdn, tdn, fddn, ffdn, pup, tup, fdup, ffup)
+
+class Vectorizer(object):
+    def __init__(self):
+        pass
+
+    def __getattribute__(self, str item):
+        try:
+            func = globals()[item]
+        except KeyError:
+            raise AttributeError('Undefined function ' + item)
+        vfunc = np.vectorize(func)
+        return vfunc
+
+vect = Vectorizer()

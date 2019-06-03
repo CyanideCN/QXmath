@@ -11,11 +11,25 @@ python setup.py build_ext --inplace
 ## 使用方法
 在此目录新建Python解释器，即可import编译好的库。
 
-```
+### 使用原始函数
+```python
 >>> import pyqxmath as pq
 >>> pq.showalter_index(16.6, 0.6, -15.9)
 1.099999999999886
 ```
+
+### 使用向量化函数
+使用`numpy.vectorize`类进行函数的向量化，因此可以支持`numpy.ndarray`的直接运算。
+```python
+>>> import pyqxmath as pq
+>>> import numpy as np
+>>> t8 = np.array([16, 17, 18])
+>>> td8 = np.array([2, 1, 0])
+>>> t5 = np.array([-16, -17, -18])
+>>> pq.vect.showalter_index(t8, td8, t5)
+array([ 0.56  , -0.48  , -1.5456])
+```
+向量化函数和原始函数的名字是相同的。
 
 可供Python使用的函数在`pyqxmath.pyx`中定义，由于文献中的函数名基本由拼音缩写而来，我在包装的过程中一般都会将其重命名成英文单词的组合，以方便记忆。函数的具体用法请参见`paper`文件夹里面的pdf文献。
 
