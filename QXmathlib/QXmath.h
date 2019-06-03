@@ -22,7 +22,7 @@ double Rm(double p, double t);
 double sqtl(double p, double td, double v);
 void fsfj(float fd, float ff, float *u, float *v);
 void fsfjb(float fd, float ff, float *u, float *v);
-void fshc(float U, float V, float fd, float ff);
+void fshc(float U, float V, float *fd, float *ff);
 double scfsd_zfwg(double u_E, double u_W, double v_N, double v_S, double d);
 double scfwd_zfwg(double v_E, double v_W, double u_N, double u_S, double d);
 double scfsd_jwwg(double u_E, double u_W, double v_N, double v_S, double wgj,  double wd, double v);
