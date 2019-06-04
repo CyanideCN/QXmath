@@ -67,14 +67,19 @@ def k_index(double t850, double td850, double t700, double td700, double t500):
 
 class Vectorizer(object):
     def __init__(self):
-        pass
+        self._func_dict = {}
 
-    def __getattribute__(self, str item):
-        try:
-            func = globals()[item]
-        except KeyError:
-            raise AttributeError('Undefined function ' + item)
-        vfunc = np.vectorize(func)
-        return vfunc
+    def __getattr__(self, str item):
+        if item in self._func_dict.keys():
+            return self._func_dict[item]
+        else:
+            glb = globals()
+            if item not in glb.keys():
+                raise AttributeError('Undefined function ' + item)
+            func = glb[item]
+            vfunc = np.vectorize(func)
+            self._func_dict[item] = vfunc
+            return vfunc
 
 vect = Vectorizer()
+del Vectorizer
