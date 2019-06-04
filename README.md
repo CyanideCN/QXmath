@@ -33,6 +33,10 @@ array([ 0.56  , -0.48  , -1.5456])
 
 可供Python使用的函数在`pyqxmath.pyx`中定义，由于文献中的函数名基本由拼音缩写而来，我在包装的过程中一般都会将其重命名成英文单词的组合，以方便记忆。函数的具体用法请参见`paper`文件夹里面的pdf文献。
 
+### 目前可用的函数
+
+`lcl_temperature`, `saturated_vapor_pressure`, `equivalent_potential_temperature`, `potential_temperature`, `total_air_energy_surface`, `total_air_energy`, `dewpoint_from_e`, `specific_humidity`, `relative_humidity`, `condensation_function`, `moist_lapse`, `water_vapor_flux`, `wind_to_uv`, `uv_to_wind`, `showalter_index`, `richardson_number`, `k_index` 
+
 ## 未来计划实现的功能
 
 1. 支持原C库中所有计算函数

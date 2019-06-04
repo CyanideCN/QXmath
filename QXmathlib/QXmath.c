@@ -82,11 +82,10 @@ double Qse(double P, double t, double td){
 }
 
 double Qp(double p, double t){
-    double P, T, Kd, out;
+    double T, Kd, out;
     Kd = Rd / Cpd;
-    P = p;
     T = t + T0;
-    out = T * pow((1000 / P), Kd);
+    out = T * pow((1000 / p), Kd);
     return out;
 }
 
@@ -149,7 +148,7 @@ double Fc(double p, double td){
     Etd = E_WATER(td);
     qs = 1000 * Rd * Etd / (p - 0.378 * Etd) / Rw;
     L = L0 - C1 * (Td - T0);
-    Fcd = (qs / (p - 0.378 * Etd)) * (Rd * L/ (Cpd * Rw * Td) - 1);
+    Fcd = (qs / (p - 0.378 * Etd)) * (Rd * L / (Cpd * Rw * Td) - 1);
     out = 100 * Fcd;
     out = out / (1 + (L * L * qs * 0.001 / (Cpd * Rw * Td * Td)) * (p / (p - 0.378 * Etd)));
     return out;
@@ -158,7 +157,7 @@ double Fc(double p, double td){
 double sqtl(double p, double td, double v){
     double q, out;
     q = qgk(p, td);
-    out = v * q / g;
+    out = v * q / (g * 0.01);
     return out;
 }
 
