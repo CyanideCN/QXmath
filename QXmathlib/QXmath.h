@@ -1,8 +1,8 @@
 struct jwdf_type {
-    float jd;
-    float wd;
-    float fd;
-    float ff;
+    double jd;
+    double wd;
+    double fd;
+    double ff;
 };
 
 typedef struct jwdf_type jwdf_type;
@@ -20,9 +20,9 @@ double rgk(double p, double td);
 double Fc(double p, double td);
 double Rm(double p, double t);
 double sqtl(double p, double td, double v);
-void fsfj(float fd, float ff, float *u, float *v);
-void fsfjb(float fd, float ff, float *u, float *v);
-void fshc(float U, float V, float *fd, float *ff);
+void fsfj(double fd, double ff, double *u, double *v);
+void fsfjb(double fd, double ff, double *u, double *v);
+void fshc(double U, double V, double *fd, double *ff);
 double scfsd_zfwg(double u_E, double u_W, double v_N, double v_S, double d);
 double scfwd_zfwg(double v_E, double v_W, double u_N, double u_S, double d);
 double scfsd_jwwg(double u_E, double u_W, double v_N, double v_S, double wgj,  double wd, double v);
@@ -37,3 +37,4 @@ double dzfwd_zfwg(double H1, double H2, double H3, double H4, double H0, double 
 double czsdzl(double Dk_1, double Dk, double P_cha);
 double showalter(double t8, double td8, double t5);
 double richardson(double pdn, double tdn, double fddn, double ffdn, double pup, double tup, double fdup, double ffup);
+double K(double T8, double Td8, double T7, double Td7, double T5);

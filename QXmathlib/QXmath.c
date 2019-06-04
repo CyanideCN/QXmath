@@ -18,6 +18,7 @@ const double rd = 9.76;
 const double PI = 3.14159265;
 const double R = 6.371229 * 1e3;
 const double C = 1.002;
+const double w = 7.2921152 * 1e-5;
 
 double Tc(double p, double t, double td){
     double Etd, Z, Z0, step = 10.0, w, m1;
@@ -144,7 +145,7 @@ double rgk(double t, double td){
 
 double Fc(double p, double td){
     double L, qs, Etd, Td, Fcd, out;
-    Td = T0 + Td;
+    Td = T0 + td;
     Etd = E_WATER(td);
     qs = 1000 * Rd * Etd / (p - 0.378 * Etd) / Rw;
     L = L0 - C1 * (Td - T0);
@@ -174,17 +175,17 @@ double Rm(double P, double t){
     return out;
 }
 
-void fsfj(float fd, float ff, float *u, float *v){
+void fsfj(double fd, double ff, double *u, double *v){
     *u = ff * (cos((270 - fd) * PI / 180));
     *v = ff * (sin((270 - fd) * PI / 180));
 }
 
-void fsfjb(float fd, float ff, float *u, float *v){
+void fsfjb(double fd, double ff, double *u, double *v){
     *u = ff * (cos((225 - fd) * PI / 180));
     *v = ff * (sin((225 - fd) * PI / 180));    
 }
 
-void fshc(float U, float V, float *fd, float *ff){
+void fshc(double U, double V, double *fd, double *ff){
     *ff = hypot(U, V);
     *fd = atan2(U, V);
     *fd = (*fd) * 180 / PI;
@@ -216,8 +217,8 @@ double scfwd_jwwg(double v_E, double v_W, double u_N, double u_S, double wgj, do
 }
 
 double scfsd_yxy(jwdf_type dat[3]){
-    float x1, x2, x3, y1, y2, y3;
-    float u1, u2, u3, v1, v2, v3;
+    double x1, x2, x3, y1, y2, y3;
+    double u1, u2, u3, v1, v2, v3;
     double out;
     x1 = 0; y1 = 0;
     x2 = (dat[1].jd - dat[0].jd) * PI * R * cos((dat[1].wd + dat[0].wd) / 2 * PI / 180) / 180;
@@ -232,7 +233,19 @@ double scfsd_yxy(jwdf_type dat[3]){
 }
 
 double scfwd_yxy(jwdf_type dat[3]){
-    return;
+    double x1, x2, x3, y1, y2, y3;
+    double u1, u2, u3, v1, v2, v3;
+    double out;
+    x1 = 0; y1 = 0;
+    x2 = (dat[1].jd - dat[0].jd) * PI * R * cos(((dat[1].wd + dat[0].wd) / 2) * PI / 180) / 180;
+    y2 = (dat[1].wd - dat[0].wd) * PI * R / 180;
+    x3 = (dat[2].jd - dat[0].jd) * PI * R * cos(((dat[2].wd + dat[0].wd) / 2) * PI / 180) / 180;
+    y3 = (dat[2].wd - dat[0].wd) * PI * R / 180;
+    fsfj(dat[0].fd, dat[0].ff, &u1, &v1);
+    fsfj(dat[1].fd, dat[1].ff, &u2, &v2);
+    fsfj(dat[2].fd, dat[2].ff, &u3, &v3);
+    out = ((v1 - v2) * (y2 - y3) - (v2 - v3) * (y1 - y2) - (x1 - x2) * (u2 - u3) + (x2 - x3) * (u1 - u2)) / ((x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2));
+    return out * 1e5;
 }
 
 double showalter(double t8, double td8, double t5){
@@ -268,7 +281,7 @@ double showalter(double t8, double td8, double t5){
 }
 
 double richardson(double pdn, double tdn, double fddn, double ffdn, double pup, double tup, double fdup, double ffup){
-    float udn, vdn, uup, vup;
+    double udn, vdn, uup, vup;
     double out;
     double pjp, pjT, cha_p, cha_t, cha_u, cha_v;
     fsfj(fdup, ffup, &uup, &vup);
@@ -282,4 +295,61 @@ double richardson(double pdn, double tdn, double fddn, double ffdn, double pup, 
     out = -1e-4 * (Rd * cha_p / pjp) * (cha_t - (A * Rd * pjT / Cpd) * (cha_p / pjp));
     out = out / (cha_u * cha_u + cha_v * cha_v);
     return out;
+}
+
+double dzfug_zfwg(double N_H, double S_H, double d, double wd){
+    double out, f;
+    f = 2 * w * sin(wd * PI / 180);
+    out = (- g / 100) * (N_H - S_H) / (2 * f * d * 1000);
+    return out;
+}
+
+double dzfvg_zfwg(double E_H, double W_H, double d, double wd){
+    double out, f;
+    f = 2 * w * sin(wd * PI / 180);
+    out = (g / 100) * (E_H - W_H) / (2 * f * d * 1000);
+    return out;
+}
+
+double dzfvg_jwwg(double E_H, double W_H, double wgj, double wd){
+    double out;
+    double r = 6.371229 * 1e6;
+    double B;
+    B = wgj;
+    out = 441 * (E_H - W_H) / (PI * B * r * w * sin(wd * PI / 180) * cos(wd * PI / 180));
+    return out;
+}
+
+double dzfwd_zfwg(double H1, double H2, double H3, double H4, double H0, double d, double wd){
+    double Hp, out;
+    d = d * 1000;
+    Hp = (H1 + H2 + H3 + H4) / 4;
+    out = 19.6 * (Hp - H0) / (7.29 * 1e-5 * d * d * sin(wd * PI / 180));
+    return out * 1e5;
+}
+
+double wgh_yxy(double jd0, double wd0, jwdf_type dat[3]){
+    double x1, x2, x3, y1, y2, y3, z1, z2, z3;
+    double r = 6.371229 * 1e6;
+    double out;
+    x1 = (dat[0].jd - jd0) * PI * r * cos(((dat[0].wd + wd0) / 2) * PI / 180) / 180;
+    x2 = (dat[1].jd - jd0) * PI * r * cos(((dat[1].wd + wd0) / 2) * PI / 180) / 180;
+    x3 = (dat[2].jd - jd0) * PI * r * cos(((dat[2].wd + wd0) / 2) * PI / 180) / 180;
+    y1 = (dat[0].wd - wd0) * PI * r / 180;
+    y2 = (dat[1].wd - wd0) * PI * r / 180;
+    y3 = (dat[2].wd - wd0) * PI * r / 180;
+    z1 = dat[0].fd;
+    z2 = dat[2].fd;
+    z3 = dat[3].fd;
+    out = z1 * x2 * y3 + x1 * y2 * z3 + y1 * z2 * x3 - y1 * x2 * z3 - x1 * z2 * y3 - z1 * y2 * x3;
+    out = out / ((x1 - x2) * (y2 - y3) - (x2 - x3) * (y1 - y2));
+    return out;
+}
+
+double K(double T8, double Td8, double T7, double Td7, double T5){
+    return (T8 - T5) + Td8 - (T7 - Td7);
+}
+
+double czsdzl(double Dk_1, double Dk, double P_cha){
+    return (1e-5 * (Dk_1 + Dk) * P_cha / 2) * 1e3;
 }

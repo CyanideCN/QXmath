@@ -46,13 +46,13 @@ def moist_lapse(double p, double t):
 def water_vapor_flux(double p, double td, double v):
     return sqtl(p, td, v)
 
-def wind_to_uv(float fd, float ff):
-    cdef float u = 0, v = 0
+def wind_to_uv(double fd, double ff):
+    cdef double u = 0, v = 0
     fsfj(fd, ff, &u, &v)
     return u, v
 
-def uv_to_wind(float u, float v):
-    cdef float fd = 0, ff = 0
+def uv_to_wind(double u, double v):
+    cdef double fd = 0, ff = 0
     fshc(u, v, &fd, &ff)
     return fd, ff
 
@@ -61,6 +61,9 @@ def showalter_index(double t850, double td850, double t500):
 
 def richardson_number(double pdn, double tdn, double fddn, double ffdn, double pup, double tup, double fdup, double ffup):
     return richardson(pdn, tdn, fddn, ffdn, pup, tup, fdup, ffup)
+
+def k_index(double t850, double td850, double t700, double td700, double t500):
+    return K(t850, td850, t700, td700, t500)
 
 class Vectorizer(object):
     def __init__(self):
