@@ -2,6 +2,7 @@
 # distutils: sources = QXmathlib/QXmath.c
 # distutils: include_dirs = QXmathlib/
 
+cimport numpy as np
 import numpy as np
 
 from _qxmath cimport *
