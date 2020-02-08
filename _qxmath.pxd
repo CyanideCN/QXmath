@@ -1,4 +1,4 @@
-cdef extern from "QXmathlib\QXmath.h":
+cdef extern from "QXmathlib/QXmath.h":
     ctypedef struct jwdf_type:
         pass
     double Tc(double p, double t, double td)
